@@ -1,98 +1,152 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# To-Do API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST para gestión de tareas construida con **NestJS**, **PostgreSQL**, **Prisma**, **Redis** y **JWT**.
+## Objetivo
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Este proyecto implementa una API para gestionar tareas por usuario, incluyendo:
+- Registro y login con JWT
+- CRUD de tareas
+- Protección de endpoints con autenticación
+- Cache del listado de tareas usando Redis
+- Invalidación de cache al crear, actualizar o eliminar tareas
+- Documentación con Swagger
+- Infraestructura local con Docker Compose
 
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Project setup
+## Instalación
 
+1. Instalar dependencias
 ```bash
-$ npm install
+  npm install
+```
+2. Levantar PostgreSQL y Redis
+```bash
+  docker compose up -d
+```
+3. Generar Prisma Client
+```bash
+  npx prisma generate
+```
+4. Ejecutar migraciones
+```bash
+  npx prisma migrate dev --name init
+```
+5. Levantar la aplicación
+```bash
+  npm run start:dev
 ```
 
-## Compile and run the project
+## Endpoints
+Auth
 
-```bash
-# development
-$ npm run start
+### POST /auth/register
 
-# watch mode
-$ npm run start:dev
+Registrar usuario
 
-# production mode
-$ npm run start:prod
+```javascript
+{
+  "email": "test@test.com",
+  "password": "123456"
+}
 ```
 
-## Run tests
+### POST /auth/login
 
-```bash
-# unit tests
-$ npm run test
+Iniciar sesión
 
-# e2e tests
-$ npm run test:e2e
+```javascript
+{
+  "email": "test@test.com",
+  "password": "123456"
+}
+```
+## Tasks
 
-# test coverage
-$ npm run test:cov
+Todos los endpoints de tareas requieren JWT.
+
+### POST /tasks
+
+Crear tarea
+
+```javascript
+{
+  "title": "Primera tarea",
+  "description": "Probando sistema",
+  "status": "PENDING"
+}
 ```
 
-## Deployment
+### GET /tasks
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Listar tareas del usuario autenticado
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Actualizar tarea
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```javascript
+{
+  "status": "DONE"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### DELETE /tasks/:id
 
-## Resources
+Eliminar tarea
 
-Check out a few resources that may come in handy when working with NestJS:
+Cache con Redis
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+El endpoint GET /tasks usa cache por usuario y por filtro de estado.
 
-## Support
+## Ejemplos de keys:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```tasks:user:{userId}:status:ALL ```
 
-## Stay in touch
+```tasks:user:{userId}:status:PENDING ```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```tasks:user:{userId}:status:IN_PROGRESS ```
 
-## License
+```tasks:user:{userId}:status:DONE ```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+La cache se invalida cuando el usuario:
+
+- Crea una tarea
+- Actualiza una tarea
+- Elimina una tarea
+
+## Decisiones técnicas
+NestJS
+
+Se utilizó una arquitectura modular separando responsabilidades en:
+
+- auth
+- tasks
+- users
+- prisma
+- redis
+
+Se eligió Prisma por su tipado fuerte, simplicidad en migraciones y buena integración con PostgreSQL.
+
+Redis
+
+Se cachea únicamente el listado de tareas por usuario, ya que es la operación de lectura más repetible del sistema. La invalidación ocurre en cada mutación para evitar inconsistencias.
+
+JWT
+
+Los endpoints de tareas están protegidos con JwtAuthGuard, garantizando que cada usuario solo pueda acceder a sus propios recursos.
+
+###
+```bash 
+npm run start:dev 
+```
+```bash
+npm run build 
+```
+```bash 
+npm run start:prod 
+```
+```bash 
+npx prisma generate 
+```
+```bash 
+npx prisma migrate dev --name init 
+```
